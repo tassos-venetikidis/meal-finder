@@ -5,7 +5,6 @@ const search = document.getElementById("search"),
   resultHeading = document.getElementById("result-heading"),
   single_mealEl = document.getElementById("single-meal");
 
-// Search meal and fetch from API
 async function searchMeals(e) {
   e.preventDefault();
   single_mealEl.innerHTML = "";
@@ -53,16 +52,7 @@ async function getMealByID(id) {
   return meal;
 }
 
-// Display Single Meal
-async function displaySingleMeal(e) {
-  const mealInfo = e
-    .composedPath()
-    .find((item) => item.classList.contains("meal-info"));
-
-  const id = mealInfo.dataset.mealid;
-
-  const meal = await getMealByID(id);
-
+function addMealtoDOM(meal) {
   const ingredients = [];
 
   for (let i = 1; i <= 20; i++) {
@@ -92,6 +82,35 @@ async function displaySingleMeal(e) {
   </div>`;
 }
 
+async function getRandomMeal() {
+  mealsEl.innerHTML = "";
+  resultHeading.innerHTML = "";
+
+  const response = await fetch(
+    "https://www.themealdb.com/api/json/v1/1/random.php"
+  );
+  if (!response.ok) {
+    return alert("There was a problem with your search. Please try again.");
+  }
+  const data = await response.json();
+  const randomMeal = data.meals[0];
+
+  addMealtoDOM(randomMeal);
+}
+
+async function displaySingleMeal(e) {
+  const mealInfo = e
+    .composedPath()
+    .find((item) => item.classList.contains("meal-info"));
+
+  const id = mealInfo.dataset.mealid;
+
+  const meal = await getMealByID(id);
+
+  addMealtoDOM(meal);
+}
+
 // Event Listeners
 submit.addEventListener("submit", searchMeals);
 mealsEl.addEventListener("click", displaySingleMeal);
+random.addEventListener("click", getRandomMeal);
