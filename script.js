@@ -31,7 +31,7 @@ async function searchMeals(e) {
     .map(
       (meal) => `<div class=meal>
   <img src="${meal.strMealThumb}" alt="${meal.strMeal}" />
-  <div class="meal-info" data-mealID="${meal.idMeal}">
+  <div class="meal-info" data-mealid="${meal.idMeal}">
   <h3>${meal.strMeal}</h3>
   </div>
   </div>`
@@ -39,5 +39,59 @@ async function searchMeals(e) {
     .join("");
 }
 
+async function getMealByID(id) {
+  const response = await fetch(
+    `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${id}`
+  );
+  if (!response.ok) {
+    return alert(
+      "There was a problem with finding that particular meal. Please try again."
+    );
+  }
+  const data = await response.json();
+  const meal = data.meals[0];
+  return meal;
+}
+
+// Display Single Meal
+async function displaySingleMeal(e) {
+  const mealInfo = e
+    .composedPath()
+    .find((item) => item.classList.contains("meal-info"));
+
+  const id = mealInfo.dataset.mealid;
+
+  const meal = await getMealByID(id);
+
+  const ingredients = [];
+
+  for (let i = 1; i <= 20; i++) {
+    if (meal[`strIngredient${i}`]) {
+      ingredients.push(
+        `${meal[`strMeasure${i}`]} - ${meal[`strIngredient${i}`]}`
+      );
+    } else {
+      break;
+    }
+  }
+
+  single_mealEl.innerHTML = `<div class="single-meal">
+  <h1>${meal.strMeal}</h1>
+  <img src="${meal.strMealThumb}" alt="${meal.strMeal}"/>
+  <div class="single-meal-info">
+  ${meal.strCategory && `<p>${meal.strCategory}</p>`}
+  ${meal.strArea && `<p>${meal.strArea}</p>`}
+  </div>
+  <div class="main">
+  <p>${meal.strInstructions}</p>
+  <h2>Ingredients</h2>
+  <ul>
+  ${ingredients.map((ingredient) => `<li>${ingredient}</li>`).join("")}
+  </ul>
+  </div>
+  </div>`;
+}
+
 // Event Listeners
 submit.addEventListener("submit", searchMeals);
+mealsEl.addEventListener("click", displaySingleMeal);
